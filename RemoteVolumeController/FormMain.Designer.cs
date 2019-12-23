@@ -44,6 +44,8 @@
             this.CheckBoxAutoRunServer = new System.Windows.Forms.CheckBox();
             this.CheckBoxStartServer = new System.Windows.Forms.CheckBox();
             this.CheckBoxAutoRunApp = new System.Windows.Forms.CheckBox();
+            this.LabelBeefwebPort = new System.Windows.Forms.Label();
+            this.TextBoxFoobarPort = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.TrackBarVol)).BeginInit();
             this.MyContextMenuStrip.SuspendLayout();
             this.GroupBoxVol.SuspendLayout();
@@ -184,11 +186,32 @@
             this.CheckBoxAutoRunApp.UseVisualStyleBackColor = true;
             this.CheckBoxAutoRunApp.Click += new System.EventHandler(this.CheckBoxAutoRunApp_Click);
             // 
+            // LabelBeefwebPort
+            // 
+            this.LabelBeefwebPort.AutoSize = true;
+            this.LabelBeefwebPort.Location = new System.Drawing.Point(12, 155);
+            this.LabelBeefwebPort.Name = "LabelBeefwebPort";
+            this.LabelBeefwebPort.Size = new System.Drawing.Size(275, 12);
+            this.LabelBeefwebPort.TabIndex = 7;
+            this.LabelBeefwebPort.Text = "Beefweb(foobar remote control component) Port";
+            // 
+            // TextBoxFoobarPort
+            // 
+            this.TextBoxFoobarPort.Location = new System.Drawing.Point(293, 152);
+            this.TextBoxFoobarPort.MaxLength = 5;
+            this.TextBoxFoobarPort.Name = "TextBoxFoobarPort";
+            this.TextBoxFoobarPort.Size = new System.Drawing.Size(57, 21);
+            this.TextBoxFoobarPort.TabIndex = 100;
+            this.TextBoxFoobarPort.TabStop = false;
+            this.TextBoxFoobarPort.TextChanged += new System.EventHandler(this.TextBoxFoobarPort_TextChanged);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(361, 152);
+            this.ClientSize = new System.Drawing.Size(361, 177);
+            this.Controls.Add(this.TextBoxFoobarPort);
+            this.Controls.Add(this.LabelBeefwebPort);
             this.Controls.Add(this.GroupBoxConfig);
             this.Controls.Add(this.GroupBoxVol);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -205,6 +228,7 @@
             this.GroupBoxConfig.ResumeLayout(false);
             this.GroupBoxConfig.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -224,6 +248,8 @@
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemShow;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemExit;
+        private System.Windows.Forms.Label LabelBeefwebPort;
+        private System.Windows.Forms.TextBox TextBoxFoobarPort;
     }
 }
 

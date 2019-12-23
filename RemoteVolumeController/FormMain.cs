@@ -27,6 +27,7 @@ namespace RemoteVolumeController
             MyNotifyIcon.Text = Utilities.StrTitle;
             ToolStripMenuItemShow.Text = Utilities.StrOpenMainWindow;
             ToolStripMenuItemExit.Text = Utilities.StrExit;
+            LabelBeefwebPort.Text = Utilities.StrFoobarPort;
 
             SysVol.VolumeChanged += SysVol_VolumeChanged;
             SetValue = new Action(() =>
@@ -50,13 +51,16 @@ namespace RemoteVolumeController
                 CheckBoxStartServer.Checked = true;
                 TextBoxAddress.Text = Server.ServerAddress;
             }
+
+            _textboxReset = true;
+            TextBoxFoobarPort.Text = Utilities.FoobarPort.ToString();
         }
 
         private void SysVol_VolumeChanged(object sender, bool e)
         {
             // if (!e) return;
             Invoke(SetValue);
-       }
+        }
 
 
 
@@ -140,5 +144,24 @@ namespace RemoteVolumeController
             base.OnLoad(e);
         }
 
+        private bool _textboxReset = false;
+        private void TextBoxFoobarPort_TextChanged(object sender, EventArgs e)
+        {
+            if (_textboxReset == true)
+            {
+                _textboxReset = false;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TextBoxFoobarPort.Text) ||
+                !ushort.TryParse(TextBoxFoobarPort.Text, out var port) ||
+                port < 1024)
+            {
+                _textboxReset = true;
+                TextBoxFoobarPort.Text = Utilities.FoobarPort.ToString();
+                return;
+            }
+            Utilities.FoobarPort = port;
+        }
     }
 }

@@ -40,6 +40,7 @@
   <PropertyGroup>
     <ApplicationIcon>speaker%281%29.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
@@ -58,6 +59,7 @@
     <Compile Include="FormMain.Designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="RemoteVolumeControllerService\BeefwebClient.cs" />
     <Compile Include="RemoteVolumeControllerService\HttpVolumeControllerServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

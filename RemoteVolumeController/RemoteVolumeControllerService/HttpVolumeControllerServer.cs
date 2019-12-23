@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,23 +11,23 @@ namespace RemoteVolumeController.RemoteVolumeControllerService
 {
     public sealed class HttpVolumeControllerServer : IDisposable
     {
-      
+
         private readonly HttpListener _listener;
         private readonly SystemVolume _sysVol;
-     
+
         private readonly int _port;
         private HttpVolumeControllerServer(int port, SystemVolume sysVol)
         {
             _listener = new HttpListener();
             _listener.Prefixes.Add($"http://+:{port.ToString()}/volume/");
             _sysVol = sysVol;
-            ServerAddress = $"http://{GetLocalIP()}:{port}/volume";
+            ServerAddress = $"http://{Utilities.GetLocalIP()}:{port}/volume";
             _port = port;
-         }
+        }
 
         public string ServerAddress { get; }
 
-  
+
         public void Start()
         {
             if (_listener.IsListening) return;
@@ -52,7 +51,7 @@ namespace RemoteVolumeController.RemoteVolumeControllerService
         {
             if (!_listener.IsListening) return;
 
-            FireWallPortSet(_port,false);
+            FireWallPortSet(_port, false);
             _listener.Stop();
         }
 
@@ -88,9 +87,33 @@ namespace RemoteVolumeController.RemoteVolumeControllerService
                 if (volStr != null && int.TryParse(volStr, out var vol)) _sysVol.MasterVolume = vol / 100f;
                 response.Close();
                 return;
-            }else if (request.RawUrl.StartsWith("/volume/api/lockscreen"))
+            }
+            else if (request.RawUrl.StartsWith("/volume/api/lockscreen"))
             {
                 NativeMethods.LockWorkStation();
+                response.Close();
+                return;
+            }
+            else if (request.RawUrl.Length >= 22 && request.RawUrl.StartsWith("/volume/api/foobar"))
+            {
+                switch (request.RawUrl[20])
+                {
+                    case 'x': // next
+                        await BeefwebClient.Next();
+                        break;
+                    case 'e': // previous
+                        await BeefwebClient.Previous();
+                        break;
+                    case 'a': // start
+                        await BeefwebClient.Play();
+                        break;
+                    case 'o': // stop
+                        await BeefwebClient.Stop();
+                        break;
+                    case 'g': // toggle
+                        await BeefwebClient.Toggle();
+                        break;
+                }
                 response.Close();
                 return;
             }
@@ -103,11 +126,6 @@ namespace RemoteVolumeController.RemoteVolumeControllerService
             response.ContentLength64 = buffer.Length;
             using (var output = response.OutputStream)
                 await output.WriteAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
-
-            //}
-            //#pragma warning disable CA1031 // Do not catch general exception types
-            //            catch { }
-            //#pragma warning restore CA1031 // Do not catch general exception types
         }
 
 
@@ -128,24 +146,7 @@ namespace RemoteVolumeController.RemoteVolumeControllerService
             return _server;
         }
 
-        private static string GetLocalIP()
-        {
-            try
-            {
-                IPHostEntry IpEntry = Dns.GetHostEntry(Dns.GetHostName());
-                foreach (IPAddress item in IpEntry.AddressList)
-                {
-                    if (item.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        return item.ToString();
-                    }
-                }
-                return "";
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch { return ""; }
-#pragma warning restore CA1031 // Do not catch general exception types
-        }
+
 
         private static int GetAvailablePort(int startingPort)
         {
