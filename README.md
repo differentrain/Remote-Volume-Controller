@@ -22,3 +22,12 @@ Control your windows volume on other device by web browser.
 ### 4. View in browser
 
 ![](https://github.com/differentrain/Remote-Volume-Controller/raw/master/pics/ViewInBrowser.png)
+
+## About foobar remote control (new feature)
+
+### 1. Install [Beefweb Remote Control](http://www.foobar2000.org/components/view/foo_beefweb) component for foobar
+
+### 2. Enable the option below：
+![](https://github.com/differentrain/Remote-Volume-Controller/raw/master/pics/EnablePort.png)
+
+### 3. Enjoy it!
