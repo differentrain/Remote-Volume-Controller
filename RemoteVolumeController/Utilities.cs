@@ -1,14 +1,11 @@
-﻿using Microsoft.Win32;
-using RemoteVolumeController.RemoteVolumeControllerService;
+﻿using RemoteVolumeController.RemoteVolumeControllerService;
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -63,10 +60,10 @@ namespace RemoteVolumeController
                         return;
                     }
 
-                  
-                        _autoRunApp = File.Exists(_myAutoRunPath);
-                        if (_autoRunApp) SetShortcut(true);
-                  
+
+                    _autoRunApp = File.Exists(_myAutoRunPath);
+                    if (_autoRunApp) SetShortcut(true);
+
 
                     var buf = new byte[3];
                     fr.Read(buf, 0, 3);
@@ -154,7 +151,7 @@ namespace RemoteVolumeController
             }
         }
 
- 
+
 
 
         public static bool AutoRunServer
@@ -181,58 +178,34 @@ namespace RemoteVolumeController
         }
 
 
+
         public static void RunApp<T>(string mutexStr) where T : Form, new()
         {
-            if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
-            {
-                using (var mutex = new Mutex(true, mutexStr, out var createNew))
-                {
-                    if (createNew)
-                    {
-                        Application.EnableVisualStyles();
-                        Application.SetCompatibleTextRenderingDefault(false);
 
-                        try
-                        {
-                            Application.Run(new T());
-                        }
+            using (var mutex = new Mutex(true, mutexStr,out var createdNew))
+            {
+                if (createdNew)
+                {
+                    Application.EnableVisualStyles();
+                    Application.SetCompatibleTextRenderingDefault(false);
+
+                    try
+                    {
+                        Application.Run(new T());
+                    }
 #pragma warning disable CA1031 // Do not catch general exception types
-                        catch (Exception e)
+                    catch (Exception e)
+                    {
+                        using (var sw = new StreamWriter(_errorLogPath, true))
                         {
-                            using (var sw = new StreamWriter(_errorLogPath, true))
-                            {
-                                sw.WriteLine("=======error==============");
-                                sw.WriteLine(e.Source.ToString());
-                                sw.WriteLine(e.TargetSite);
-                                sw.WriteLine(e.Message);
-                                sw.WriteLine(e.StackTrace);
-                            }
+                            sw.WriteLine("=======error==============");
+                            sw.WriteLine(e.Source.ToString());
+                            sw.WriteLine(e.TargetSite);
+                            sw.WriteLine(e.Message);
+                            sw.WriteLine(e.StackTrace);
                         }
+                    }
 #pragma warning restore CA1031 // Do not catch general exception types
-
-                    }
-                    else
-                    {
-                        Environment.Exit(0);
-                    }
-                }
-            }
-            else
-            {
-                using (var me = Process.GetCurrentProcess())
-                {
-                    if (me.StartInfo.Verb == "runas")
-                    {
-                        Environment.Exit(0);
-                    }
-                    else
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = me.ProcessName,
-                            Verb = "runas"
-                        });
-                    }
                 }
             }
         }
@@ -271,17 +244,17 @@ namespace RemoteVolumeController
 #pragma warning restore CA1031 // Do not catch general exception types
         }
 
- 
+
 
 
         private static readonly string _myAutoRunPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup) + @"\10275915-be49-4291-86a1-c2622c7146fe.lnk";
- 
-       private static void SetShortcut(bool vaule)
+
+        private static void SetShortcut(bool vaule)
         {
             if (File.Exists(_myAutoRunPath)) File.Delete(_myAutoRunPath);
 
-            if (!vaule) return;         
-            var link = (IShellLinkW) new ShellLink ();
+            if (!vaule) return;
+            var link = (IShellLinkW)new ShellLink();
             try
             {
                 link.SetDescription("RemoteVolumeController");
@@ -298,7 +271,7 @@ namespace RemoteVolumeController
 
         [ComImport]
         [Guid("00021401-0000-0000-C000-000000000046")]
-        private class ShellLink 
+        private class ShellLink
         {
         }
 

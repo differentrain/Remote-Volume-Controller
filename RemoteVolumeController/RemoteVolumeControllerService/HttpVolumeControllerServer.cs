@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,10 +17,19 @@ namespace RemoteVolumeController.RemoteVolumeControllerService
         private readonly SystemVolume _sysVol;
 
         private readonly int _port;
+
+        private readonly string _cmdArgAddUrl;
+        private readonly string _cmdArgDelUrl;
+
         private HttpVolumeControllerServer(int port, SystemVolume sysVol)
         {
             _listener = new HttpListener();
-            _listener.Prefixes.Add($"http://+:{port.ToString()}/volume/");
+
+            var serAddr = $"http://+:{port.ToString()}/volume/";
+            _cmdArgAddUrl = $"http add urlacl url={serAddr} user={WindowsIdentity.GetCurrent().Name}";
+            _cmdArgDelUrl = $"http delete urlacl url={serAddr}";
+
+            _listener.Prefixes.Add(serAddr);
             _sysVol = sysVol;
             ServerAddress = $"http://{Utilities.GetLocalIP()}:{port}/volume";
             _port = port;
@@ -27,12 +37,11 @@ namespace RemoteVolumeController.RemoteVolumeControllerService
 
         public string ServerAddress { get; }
 
-
         public void Start()
         {
             if (_listener.IsListening) return;
 
-            FireWallPortSet(_port, true);
+            NetshSetSet(_cmdArgAddUrl, CmdArgAddPort + _port.ToString());
             _listener.Start();
 
             Task.Factory.StartNew(async () =>
@@ -50,8 +59,7 @@ namespace RemoteVolumeController.RemoteVolumeControllerService
         public void Stop()
         {
             if (!_listener.IsListening) return;
-
-            FireWallPortSet(_port, false);
+            NetshSetSet(_cmdArgDelUrl, CmdArgDelPort + _port.ToString());
             _listener.Stop();
         }
 
@@ -171,20 +179,25 @@ namespace RemoteVolumeController.RemoteVolumeControllerService
         private static readonly ProcessStartInfo cmdStartInfo = new ProcessStartInfo()
         {
             FileName = "netsh",
-            UseShellExecute = false,
-            CreateNoWindow = true
+            UseShellExecute = true,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden,
+            Verb = "runas"
         };
-        private const string CmdArgAddPort = @"advfirewall firewall add rule name=""RemoteVolumeControl"" dir=in action=allow protocol=TCP localport=";
-        private const string CmdArgDelPort = @"advfirewall firewall delete rule name=""RemoteVolumeControl"" protocol=TCP localport=";
+        private const string CmdArgAddPort = @"advfirewall firewall add rule name=""RemoteVolumeControl10275915-be49-4291-86a1-c2622c7146fe"" dir=in action=allow protocol=TCP localport=";
+        private const string CmdArgDelPort = @"advfirewall firewall delete rule name=""RemoteVolumeControl10275915-be49-4291-86a1-c2622c7146fe"" protocol=TCP localport=";
 
-        private static void FireWallPortSet(int port, bool add)
+        private static void NetshSetSet(params string[] args)
         {
-            var arg = (add ? CmdArgAddPort : CmdArgDelPort) + port.ToString();
-            cmdStartInfo.Arguments = arg;
-            using (var p = Process.Start(cmdStartInfo))
+            for (int i = 0; i < 2; i++)
             {
-                p.WaitForExit();
+                cmdStartInfo.Arguments = args[i];
+                using (var p = Process.Start(cmdStartInfo))
+                {
+                    p.WaitForExit();
+                }
             }
+
         }
 
 
@@ -194,7 +207,7 @@ namespace RemoteVolumeController.RemoteVolumeControllerService
         {
             if (!disposedValue)
             {
-                FireWallPortSet(_port, false);
+                NetshSetSet(_cmdArgDelUrl, CmdArgDelPort + _port.ToString());
                 _listener.Abort();
                 _listener.Close();
                 disposedValue = true;
