@@ -5,6 +5,9 @@ Control your windows volume on other device by web browser.
 * Windows7 or later
 * .NET Framework 4.5.2 or later
 
+## Notice
+If the app crashed, please send me the log file(RemoteVolumeController.log) in the same directory as this app.
+
 ## How To Use
 
 ### 1. Run app
